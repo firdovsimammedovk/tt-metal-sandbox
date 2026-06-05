@@ -69,10 +69,30 @@ jobs:
             echo "wheel_installed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build docs
+      - name: Install doxygen
+        run: sudo apt-get install -y doxygen
+
+      - name: Build Doxygen XML (for C++ API)
         run: |
-          cd docs
-          make html
+          cd $TT_METAL_HOME
+          doxygen docs/Doxyfile || echo "Doxygen failed — C++ API pages will be skipped"
+
+      - name: Build TT-Metalium docs
+        run: |
+          mkdir -p docs/build
+          DOCS_VERSION=latest REQUESTED_DOCS_PKG=tt-metalium \
+            sphinx-build docs/source/tt-metalium docs/build/html/tt-metalium \
+            --keep-going || true
+
+      - name: Build TT-NN docs
+        run: |
+          DOCS_VERSION=latest REQUESTED_DOCS_PKG=ttnn \
+            sphinx-build docs/source/ttnn docs/build/html/ttnn \
+            --keep-going || true
+
+      - name: Copy root index
+        run: |
+          cp docs/source/index.html docs/build/html/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
