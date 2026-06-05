@@ -39,14 +39,14 @@ jobs:
           DOCS_VERSION=latest sphinx-build \
             docs/source/tt-metalium \
             docs/build/html/tt-metalium \
-            -W --keep-going || true
+            --keep-going || true
 
       - name: Build TT-NN docs
         run: |
           DOCS_VERSION=latest sphinx-build \
             docs/source/ttnn \
             docs/build/html/ttnn \
-            -W --keep-going || true
+            --keep-going || true
 
       - name: Copy root index
         run: |
