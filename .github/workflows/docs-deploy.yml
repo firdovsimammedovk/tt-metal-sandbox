@@ -40,7 +40,9 @@ jobs:
         run: uv pip install --system -r docs/requirements-docs.txt
 
       - name: Install ttnn from PyPI
-        run: uv pip install --system ttnn || echo "ttnn install failed — docs will use mock stubs"
+        run: |
+          pip install ttnn
+          python -c "import ttnn._ttnn; print('ttnn._ttnn OK')" && echo "ttnn ready" || echo "ttnn._ttnn not importable — docs will use mock stubs"
 
       - name: Install system dependencies
         run: sudo apt-get install -y doxygen pandoc
