@@ -12,14 +12,15 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     env:
       TT_METAL_HOME: ${{ github.workspace }}
-      PYTHONPATH: ${{ github.workspace }}
+      DOC_SITE_BASE_URL: https://firdovsimammedovk.github.io/tt-metal-sandbox
       DOCS_VERSION: latest
 
     steps:
@@ -27,30 +28,124 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.11"
 
-      - name: Install uv
-        run: pip install uv
+      - name: Restore docs virtualenv cache
+        id: cache-docs-venv
+        uses: actions/cache@v4
+        with:
+          path: .ci-docs-venv
+          key: ${{ runner.os }}-docs-venv-py311-${{ hashFiles('docs/requirements-docs.txt', 'setup.py', 'pyproject.toml') }}
 
-      - name: Install docs requirements
-        run: uv pip install --system -r docs/requirements-docs.txt
+      - name: Restore C++ build cache
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            build_Release
+          key: ${{ runner.os }}-docs-build-${{ hashFiles('build_metal.sh', 'CMakeLists.txt', 'cmake/**/*.cmake', 'tt_metal/CMakeLists.txt', 'ttnn/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-docs-build-
 
-      - name: Install ttnn from PyPI
+      - name: Activate docs virtualenv
         run: |
-          pip install ttnn
-          python -c "import ttnn._ttnn; print('ttnn._ttnn OK')" && echo "ttnn ready" || echo "ttnn._ttnn not importable — docs will use mock stubs"
+          if [[ ! -d ".ci-docs-venv" ]]; then
+            python3 -m venv .ci-docs-venv
+          fi
+          echo "VIRTUAL_ENV=${{ github.workspace }}/.ci-docs-venv" >> "$GITHUB_ENV"
+          echo "${{ github.workspace }}/.ci-docs-venv/bin" >> "$GITHUB_PATH"
 
       - name: Install system dependencies
-        run: sudo apt-get install -y doxygen pandoc
-
-      - name: Build Doxygen XML (for C++ API)
         run: |
-          cd $TT_METAL_HOME
-          doxygen docs/Doxyfile || echo "Doxygen failed — C++ API pages will be skipped"
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz ninja-build rsync clang lld libnuma-dev libhwloc-dev libopenmpi-dev openmpi-bin pandoc
+          if ! command -v clang-20 >/dev/null 2>&1; then
+            sudo ln -sf "$(command -v clang)" /usr/local/bin/clang-20
+          fi
+          if ! command -v clang++-20 >/dev/null 2>&1; then
+            sudo ln -sf "$(command -v clang++)" /usr/local/bin/clang++-20
+          fi
+
+      - name: Check if ttnn backend already importable
+        id: verify-ttnn-backend
+        run: |
+          set +e
+          python - <<'PY'
+          import importlib, sys
+          try:
+              importlib.import_module("ttnn._ttnn")
+              sys.exit(0)
+          except Exception:
+              sys.exit(1)
+          PY
+          if [ $? -eq 0 ]; then
+            echo "ttnn_backend_ready=true" >> "$GITHUB_OUTPUT"
+            echo "TTNN backend: already ready"
+          else
+            echo "ttnn_backend_ready=false" >> "$GITHUB_OUTPUT"
+            echo "TTNN backend: needs build"
+          fi
+
+      - name: Build native prerequisites (best effort)
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          set +e
+          if [[ -x ./build_metal.sh ]]; then
+            chmod +x ./build_metal.sh
+            ./build_metal.sh --disable-profiler
+            build_status=$?
+          else
+            cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=build -DENABLE_TRACY=OFF
+            cmake --build build
+            cmake --install build
+            build_status=$?
+          fi
+          set -e
+          if [[ "$build_status" -ne 0 ]]; then
+            echo "::warning::Native build failed. Continuing with Python packaging fallback."
+          fi
+
+      - name: Install docs and Python prerequisites
+        if: steps.cache-docs-venv.outputs.cache-hit != 'true' || steps.verify-ttnn-backend.outputs.ttnn_backend_ready != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements-docs.txt
+          if [[ ! -x "/opt/tenstorrent/sfpi/compiler/bin/riscv-tt-elf-g++" ]]; then
+            echo "Installing SFPI toolchain..."
+            chmod +x ./install_dependencies.sh
+            sudo ./install_dependencies.sh --sfpi
+          fi
+          if [[ -f "build/lib/_ttnn.so" && -d "build/lib" && -d "runtime" ]]; then
+            echo "Using precompiled artifacts..."
+            set +e
+            TT_FROM_PRECOMPILED_DIR="${GITHUB_WORKSPACE}" pip install --force-reinstall .
+            if [[ $? -ne 0 ]]; then
+              echo "::warning::Precompiled install failed, falling back to CMake wheel build."
+              CIBUILDWHEEL=1 CIBW_BUILD_TYPE=Release pip install --force-reinstall .
+            fi
+            set -e
+          else
+            echo "Building ttnn wheel via CMake..."
+            CIBUILDWHEEL=1 CIBW_BUILD_TYPE=Release pip install --force-reinstall .
+          fi
+
+      - name: Verify ttnn._ttnn is importable
+        run: |
+          python - <<'PY'
+          import importlib
+          importlib.import_module("ttnn._ttnn")
+          print("ttnn._ttnn import OK")
+          PY
+
+      - name: Build Doxygen XML
+        run: doxygen docs/Doxyfile || echo "::warning::Doxygen failed — C++ API pages skipped"
 
       - name: Build TT-Metalium docs
         run: |
@@ -66,8 +161,7 @@ jobs:
             --keep-going || true
 
       - name: Copy root index
-        run: |
-          cp docs/source/index.html docs/build/html/index.html
+        run: cp docs/source/index.html docs/build/html/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -81,7 +175,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - name: Deploy to GitHub Pages
