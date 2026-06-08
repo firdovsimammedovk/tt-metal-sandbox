@@ -39,38 +39,11 @@ jobs:
       - name: Install docs requirements
         run: uv pip install --system -r docs/requirements-docs.txt
 
-      - name: Download latest tt-metal wheel
-        id: download-wheel
-        run: |
-          # Get the latest release info
-          LATEST=$(curl -s https://api.github.com/repos/tenstorrent/tt-metal/releases/latest)
-          TAG=$(echo "$LATEST" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
-          echo "Latest release: $TAG"
+      - name: Install ttnn
+        run: uv pip install --system ttnn || echo "ttnn installation failed — docs will build without API content"
 
-          # Find wheel asset
-          WHEEL_URL=$(echo "$LATEST" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          assets = data.get('assets', [])
-          for a in assets:
-              name = a['name']
-              if name.endswith('.whl') and 'cp310' in name and 'linux_x86_64' in name:
-                  print(a['browser_download_url'])
-                  break
-          ")
-
-          if [ -n "$WHEEL_URL" ]; then
-            echo "Downloading wheel: $WHEEL_URL"
-            curl -L -o tt_metal.whl "$WHEEL_URL"
-            uv pip install --system tt_metal.whl
-            echo "wheel_installed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No matching wheel found in release assets"
-            echo "wheel_installed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install doxygen
-        run: sudo apt-get install -y doxygen
+      - name: Install system dependencies
+        run: sudo apt-get install -y doxygen pandoc
 
       - name: Build Doxygen XML (for C++ API)
         run: |

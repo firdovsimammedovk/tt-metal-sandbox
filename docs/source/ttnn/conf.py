@@ -25,14 +25,24 @@ extensions = [
 try:
     import op_documenter
     extensions.append("op_documenter")
-except ImportError:
+except Exception:
     pass
 
 try:
     import doc_modifier
     extensions.append("doc_modifier")
-except ImportError:
+except Exception:
     pass
+
+_ttnn_full = False
+try:
+    import ttnn.experimental  # noqa: F401
+    _ttnn_full = True
+except Exception:
+    pass
+
+if not _ttnn_full:
+    autodoc_mock_imports = ["ttnn"]
 
 source_suffix = {
     ".rst": "restructuredtext",
