@@ -22,7 +22,13 @@ extensions = [
     "myst_parser",
 ]
 
-autodoc_mock_imports = ["ttnn"]
+import subprocess
+_ttnn_ok = subprocess.run(
+    [__import__("sys").executable, "-c", "import ttnn._ttnn"],
+    capture_output=True,
+).returncode == 0
+if not _ttnn_ok:
+    autodoc_mock_imports = ["ttnn"]
 
 source_suffix = {
     ".rst": "restructuredtext",
