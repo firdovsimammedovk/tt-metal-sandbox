@@ -22,10 +22,12 @@ extensions = [
     "myst_parser",
 ]
 
-import subprocess
+import subprocess, os as _os
+_env = {k: v for k, v in _os.environ.items() if k != "PYTHONPATH"}
 _ttnn_ok = subprocess.run(
     [__import__("sys").executable, "-c", "import ttnn._ttnn"],
     capture_output=True,
+    env=_env,
 ).returncode == 0
 if not _ttnn_ok:
     autodoc_mock_imports = ["ttnn"]
