@@ -58,6 +58,7 @@ html_context = {
 
 def setup(app):
     app.add_css_file("tt_theme.css")
+    app.add_js_file("api_style.js")
 
 
 breathe_projects = {"ttmetaldoxygen": "../../doxygen_build/xml/"}
