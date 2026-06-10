@@ -1094,10 +1094,12 @@ html.writer-html5 .rst-content dl.py > dt {
 }
 
 /* Signature box — display:block so inline spans flow naturally */
-/* Supports both C++ (dl.cpp.function) and Python (dl.py.function/class) */
+/* Supports C++ (breathe) and Python (autodoc) including dl.py.data (ttnn) */
 .rst-content dl.cpp.function > dt.sig,
 .rst-content dl.py.function > dt.sig,
-.rst-content dl.py.class > dt.sig {
+.rst-content dl.py.class > dt.sig,
+.rst-content dl.py.data > dt.sig,
+.rst-content dl.py.method > dt.sig {
   display: block !important;
   position: relative !important;
   background: #ffffff !important;
@@ -1119,27 +1121,28 @@ html.writer-html5 .rst-content dl.py > dt {
 /* Hide the trailing <br> Sphinx inserts inside dt */
 .rst-content dl.cpp.function > dt.sig > br,
 .rst-content dl.py.function > dt.sig > br,
-.rst-content dl.py.class > dt.sig > br {
+.rst-content dl.py.class > dt.sig > br,
+.rst-content dl.py.data > dt.sig > br,
+.rst-content dl.py.method > dt.sig > br {
   display: none !important;
 }
 
-/* All spans inside signature: inline monospace — no flex treatment */
-.rst-content dl.cpp > dt.sig span,
-.rst-content dl.cpp > dt.sig * {
+/* All spans inside signature: inline monospace */
+.rst-content dt.tt-api-sig-box span,
+.rst-content dt.tt-api-sig-box * {
   font-family: var(--font-mono) !important;
   font-size: 14px !important;
   display: inline !important;
 }
 
-/* Namespace/class prefix */
-.rst-content dl.cpp > dt .sig-prename { color: #3a5452 !important; }
-/* Function name */
-.rst-content dl.cpp > dt .sig-name    { color: #1e86a9 !important; }
-/* Parens & punctuation */
-.rst-content dl.cpp > dt .sig-paren,
-.rst-content dl.cpp > dt .p           { color: #092221 !important; }
-/* Param names */
-.rst-content dl.cpp > dt .sig-param   { color: #092221 !important; }
+/* Python sig colours */
+.rst-content dt.tt-api-sig-box .sig-prename { color: #3a5452 !important; }
+.rst-content dt.tt-api-sig-box .sig-name    { color: #1e86a9 !important; }
+.rst-content dt.tt-api-sig-box .sig-paren,
+.rst-content dt.tt-api-sig-box .p           { color: #092221 !important; }
+.rst-content dt.tt-api-sig-box .sig-param   { color: #092221 !important; }
+/* Property value (= <nanobind.nb_func object>) */
+.rst-content dt.tt-api-sig-box em.property  { color: #3a5452 !important; font-style: normal !important; }
 
 /* Copy button: absolute top-right */
 .tt-api-copy-btn {
@@ -1158,32 +1161,39 @@ html.writer-html5 .rst-content dl.py > dt {
 }
 .tt-api-copy-btn:hover { opacity: 1 !important; }
 
-/* ── dl.cpp reset ───────────────────────────────────────────── */
+/* ── dl reset (all API types) ───────────────────────────────── */
 .rst-content dl.cpp.function,
 .rst-content dl.py.function,
-.rst-content dl.py.class {
+.rst-content dl.py.class,
+.rst-content dl.py.data,
+.rst-content dl.py.method {
   width: 100% !important;
   max-width: 100% !important;
 }
 
 .rst-content dl.cpp.function > dd,
 .rst-content dl.py.function > dd,
-.rst-content dl.py.class > dd {
+.rst-content dl.py.class > dd,
+.rst-content dl.py.data > dd,
+.rst-content dl.py.method > dd {
   margin: 0 !important;
   padding: 0 !important;
   border-left: none !important;
 }
 
 /* ── Description paragraph ──────────────────────────────────── */
-.rst-content dl.cpp.function > dd > p.tt-api-description,
-.rst-content dl.py.function > dd > p.tt-api-description,
-.rst-content dl.py.class > dd > p.tt-api-description {
+p.tt-api-description {
   font-size: 16px !important;
   font-weight: 400 !important;
   color: #092221 !important;
   line-height: 1.35 !important;
   letter-spacing: 0.25px !important;
   margin: 0 0 40px !important;
+}
+
+/* Hide the raw field-list (replaced by JS sections) */
+.rst-content dl.py > dd dl.field-list {
+  display: none !important;
 }
 
 /* ── Section headings (Parameters / Returns) added by JS ────── */
