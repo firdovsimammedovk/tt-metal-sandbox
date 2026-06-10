@@ -1362,6 +1362,17 @@ h2.tt-api-section-heading {
   box-shadow: none !important;
 }
 
+/* Override RTD theme borders on highlight divs and literal blocks globally */
+.rst-content div[class^="highlight"],
+.rst-content div[class*=" highlight"],
+.rst-content pre.literal-block,
+.rst-content .linenodiv pre,
+.rst-content .highlight-default,
+.rst-content .doctest {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* Kill ALL borders/backgrounds Sphinx/RTD puts on pre/code inside example */
 .tt-example-block pre,
 .tt-example-block code,
@@ -1382,40 +1393,43 @@ h2.tt-api-section-heading {
 }
 
 /* Line numbers table — built by JS */
-.tt-example-lines {
-  display: flex !important;
+.tt-example-table {
   width: 100% !important;
+  border-collapse: collapse !important;
+  border: none !important;
   padding: 20px !important;
+  display: table !important;
   box-sizing: border-box !important;
-  overflow-x: auto !important;
 }
 
-.tt-example-linenos {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  padding-right: 20px !important;
-  user-select: none !important;
-  flex-shrink: 0 !important;
+.tt-example-table tr {
+  border: none !important;
+  background: transparent !important;
 }
 
-.tt-example-linenos span {
+.tt-example-table td {
+  border: none !important;
+  padding: 0 !important;
+  vertical-align: top !important;
+  line-height: 1.4 !important;
   font-family: var(--font-mono) !important;
   font-size: 13px !important;
-  line-height: 1.4 !important;
+  background: transparent !important;
+}
+
+.tt-lineno {
   color: #678583 !important;
-  display: block !important;
+  text-align: right !important;
+  padding-right: 20px !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+  min-width: 2ch !important;
 }
 
-.tt-example-code {
-  flex: 1 !important;
-  min-width: 0 !important;
-}
-
-.tt-example-code pre {
-  margin: 0 !important;
-  padding: 0 !important;
+.tt-codeline {
+  color: #092221 !important;
   white-space: pre !important;
+  width: 100% !important;
 }
 
 /* Keep >>> prompts gray, rest dark */

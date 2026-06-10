@@ -243,47 +243,45 @@
       if (highlight) {
         var pre = highlight.querySelector("pre");
         if (pre) {
-          /* Build line-numbers layout */
-          var rawText = pre.textContent || "";
-          /* Trim trailing empty line */
-          var rawLines = rawText.replace(/\n$/, "").split("\n");
-          var lineCount = rawLines.length;
+          /* Split innerHTML by newlines — Pygments never spans tokens across lines */
+          var html = pre.innerHTML.replace(/\n$/, ""); /* trim trailing newline */
+          var htmlLines = html.split("\n");
 
-          /* Container: linenos | code */
-          var linesWrap = document.createElement("div");
-          linesWrap.className = "tt-example-lines";
+          /* Build table: lineno | code per row */
+          var table = document.createElement("table");
+          table.className = "tt-example-table";
 
-          var linenosDiv = document.createElement("div");
-          linenosDiv.className = "tt-example-linenos";
-          for (var i = 1; i <= lineCount; i++) {
-            var numSpan = document.createElement("span");
-            numSpan.textContent = i;
-            linenosDiv.appendChild(numSpan);
-          }
+          htmlLines.forEach(function (lineHtml, idx) {
+            var tr = document.createElement("tr");
 
-          var codeDiv = document.createElement("div");
-          codeDiv.className = "tt-example-code";
-          codeDiv.appendChild(pre.cloneNode(true));
+            var tdNum = document.createElement("td");
+            tdNum.className = "tt-lineno";
+            tdNum.textContent = idx + 1;
 
-          linesWrap.appendChild(linenosDiv);
-          linesWrap.appendChild(codeDiv);
+            var tdCode = document.createElement("td");
+            tdCode.className = "tt-codeline";
+            tdCode.innerHTML = lineHtml || " "; /* nbsp for empty lines */
 
-          /* Replace original highlight content with new layout */
+            tr.appendChild(tdNum);
+            tr.appendChild(tdCode);
+            table.appendChild(tr);
+          });
+
           highlight.innerHTML = "";
           highlight.style.padding = "0";
-          highlight.appendChild(linesWrap);
+          highlight.style.border = "none";
+          highlight.appendChild(table);
         }
 
-        /* Copy button — absolute top-right of the highlight area */
+        /* Copy button — absolute top-right */
         var btn = document.createElement("button");
         btn.className = "tt-example-copy-btn";
         btn.title = "Copy code";
         btn.innerHTML = iconCopy;
         btn.addEventListener("click", function () {
-          var codePre = highlight.querySelector("pre");
-          var lines = codePre ? codePre.textContent.replace(/\n$/, "").split("\n") : [];
-          var clean = lines.map(function (l) {
-            return l.replace(/^>>>\s?/, "");
+          var tds = highlight.querySelectorAll("td.tt-codeline");
+          var clean = Array.from(tds).map(function (td) {
+            return td.textContent.replace(/^>>>\s?/, "");
           }).join("\n").trim();
           navigator.clipboard && navigator.clipboard.writeText(clean);
           btn.innerHTML = iconDone;
