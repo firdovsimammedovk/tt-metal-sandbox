@@ -1091,30 +1091,37 @@ html.writer-html5 .rst-content dl.cpp > dt {
   color: #092221 !important;
 }
 
-/* Signature box */
+/* Signature box — display:block so inline spans flow naturally */
 .rst-content dl.cpp.function > dt.sig {
+  display: block !important;
+  position: relative !important;
   background: #ffffff !important;
   border: 1px solid #c7d9d8 !important;
   border-radius: 8px !important;
   padding: 16px !important;
+  padding-right: 52px !important;  /* room for copy button */
   font-family: var(--font-mono) !important;
   font-size: 14px !important;
   line-height: 1.7 !important;
   color: #092221 !important;
   margin: 0 0 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 16px !important;
   overflow-x: auto !important;
+  white-space: nowrap !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* All spans inside signature: monospace */
+/* Hide the trailing <br> Sphinx inserts inside dt */
+.rst-content dl.cpp.function > dt.sig > br {
+  display: none !important;
+}
+
+/* All spans inside signature: inline monospace — no flex treatment */
+.rst-content dl.cpp > dt.sig span,
 .rst-content dl.cpp > dt.sig * {
   font-family: var(--font-mono) !important;
   font-size: 14px !important;
+  display: inline !important;
 }
 
 /* Namespace/class prefix */
@@ -1127,19 +1134,22 @@ html.writer-html5 .rst-content dl.cpp > dt {
 /* Param names */
 .rst-content dl.cpp > dt .sig-param   { color: #092221 !important; }
 
-/* Copy button inserted by api_style.js */
+/* Copy button: absolute top-right */
 .tt-api-copy-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  opacity: 0.7;
-  transition: opacity 120ms ease;
+  position: absolute !important;
+  right: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  opacity: 0.7 !important;
+  transition: opacity 120ms ease !important;
 }
-.tt-api-copy-btn:hover { opacity: 1; }
+.tt-api-copy-btn:hover { opacity: 1 !important; }
 
 /* ── dl.cpp reset ───────────────────────────────────────────── */
 .rst-content dl.cpp.function {
@@ -1167,8 +1177,9 @@ html.writer-html5 .rst-content dl.cpp > dt {
   margin-bottom: 40px;
 }
 
-.rst-content dl.cpp.function .tt-api-section-heading {
-  font-family: var(--font-main) !important;
+.rst-content dl.cpp.function .tt-api-section-heading,
+h2.tt-api-section-heading {
+  font-family: "Neue Haas Unica Pro", "Degular", -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 500 !important;
   font-size: 22px !important;
   line-height: 1.3 !important;
@@ -1176,6 +1187,9 @@ html.writer-html5 .rst-content dl.cpp > dt {
   letter-spacing: 0 !important;
   margin: 0 0 24px !important;
   display: block !important;
+  /* Override generic h2 display:flex from heading rule */
+  align-items: unset !important;
+  gap: unset !important;
 }
 
 /* ── Parameter list ─────────────────────────────────────────── */
