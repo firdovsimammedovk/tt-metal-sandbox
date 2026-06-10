@@ -64,12 +64,18 @@ jobs:
       - name: Verify ttnn import
         id: check-ttnn
         run: |
-          if python -c "import ttnn._ttnn; print('ttnn._ttnn OK')" 2>&1; then
+          echo "=== ttnn diagnostics ==="
+          python -c "import ttnn; print('ttnn file:', ttnn.__file__)" 2>&1 || echo "import ttnn FAILED"
+          python -c "import ttnn._ttnn; print('_ttnn OK')" 2>&1 || echo "_ttnn FAILED"
+          python -c "import ttnn.experimental; print('ttnn.experimental OK')" 2>&1 || echo "ttnn.experimental FAILED"
+          python -c "import ttnn; print('open_device:', hasattr(ttnn, 'open_device'))" 2>&1 || true
+          # Check if experimental submodule works (needed for autosummary)
+          if python -c "import ttnn.experimental" 2>/dev/null; then
             echo "ttnn_ok=true" >> "$GITHUB_OUTPUT"
-            echo "ttnn.open_device exists:" $(python -c "import ttnn; print(hasattr(ttnn, 'open_device'))")
+            echo "ttnn fully importable including experimental"
           else
             echo "ttnn_ok=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::ttnn._ttnn not importable — docs will use mock stubs"
+            echo "::warning::ttnn.experimental not importable — docs will use mock stubs"
           fi
 
       - name: Build from source if PyPI import failed
@@ -116,7 +122,8 @@ jobs:
         run: |
           DOCS_VERSION=latest REQUESTED_DOCS_PKG=ttnn \
             sphinx-build docs/source/ttnn docs/build/html/ttnn \
-            --keep-going || true
+            --keep-going 2>&1 | tail -40 || true
+          echo "=== ttnn HTML files built: $(find docs/build/html/ttnn -name '*.html' 2>/dev/null | wc -l) ==="
 
       - name: Copy root index
         run: cp docs/source/index.html docs/build/html/index.html
