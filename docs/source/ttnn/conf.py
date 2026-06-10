@@ -27,17 +27,9 @@ extensions = [
     "myst_parser",
 ]
 
-try:
-    import op_documenter
-    extensions.append("op_documenter")
-except Exception:
-    pass
-
-try:
-    import doc_modifier
-    extensions.append("doc_modifier")
-except Exception:
-    pass
+# op_documenter / doc_modifier require a full tt-metal build environment
+# and crash sphinx when the C extension tries to introspect ttnn in CI.
+# Disabled in sandbox — plain autodoc provides signatures without them.
 
 # autosummary raises a fatal ExtensionError when it can't import a listed module.
 # Strategy: check each layer separately so we mock only what's needed.
