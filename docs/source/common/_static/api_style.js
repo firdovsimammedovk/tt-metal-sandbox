@@ -306,7 +306,29 @@
     });
   }
 
+  /* ─── Breadcrumbs — Figma node 239:8072 ─────────────────────── */
+  function transformBreadcrumbs() {
+    /* Replace home icon link with plain "Home" text */
+    var homeLink = document.querySelector(".wy-breadcrumbs a.icon-home");
+    if (homeLink) {
+      homeLink.textContent = "Home";
+      homeLink.className = "";
+    }
+
+    /* Remove the "View page source" aside */
+    var aside = document.querySelector(".wy-breadcrumbs-aside");
+    if (aside) aside.parentNode && aside.parentNode.removeChild(aside);
+
+    /* Remove the hr */
+    var nav = document.querySelector('div[role="navigation"][aria-label="Page navigation"]');
+    if (nav) {
+      var hr = nav.querySelector("hr");
+      if (hr) hr.parentNode && hr.parentNode.removeChild(hr);
+    }
+  }
+
   function run() {
+    transformBreadcrumbs();
     transformPyData();
     transformCpp();
     transformExamples();

@@ -1013,28 +1013,80 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
 }
 
 /* Breadcrumbs */
+/* ── Breadcrumbs — Figma node 239:8072 ──────────────────────── */
+div[role="navigation"][aria-label="Page navigation"] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 0 16px !important;
+}
+
 .wy-breadcrumbs {
-  background: #ffffff;
-  padding: 8px 0px 25px;
-  font-size: 13px;
-  margin-bottom: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0 !important;
+  list-style: none !important;
+  font-size: 0 !important; /* zero font-size on container, set on children */
 }
 
-.wy-breadcrumbs li {
-  color: var(--text-secondary);
+.wy-breadcrumbs > li {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: var(--font-main) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.25px !important;
+  color: #293d3b !important;
+  list-style: none !important;
 }
 
-.wy-breadcrumbs a {
-  color: var(--color-accent) !important;
+/* Separator " / " between items */
+.wy-breadcrumbs > li + li:not(.wy-breadcrumbs-aside)::before {
+  content: " / " !important;
+  color: #293d3b !important;
+  font-size: 12px !important;
+  font-family: var(--font-main) !important;
+  padding: 0 2px !important;
+}
+
+/* Regular links */
+.wy-breadcrumbs > li a,
+.wy-breadcrumbs > li a:visited {
+  color: #293d3b !important;
+  font-size: 12px !important;
+  font-family: var(--font-main) !important;
+  font-weight: 400 !important;
+  text-decoration: none !important;
   border-bottom: none !important;
+  background: transparent !important;
 }
 
-/* Remove "View page source" link */
+.wy-breadcrumbs > li a:hover {
+  color: #1e86a9 !important;
+}
+
+/* Active (current page) item — teal + medium weight */
+.wy-breadcrumbs > li.breadcrumb-item.active {
+  color: #1e86a9 !important;
+  font-weight: 500 !important;
+}
+
+/* Hide "View page source" */
 .wy-breadcrumbs-aside {
   display: none !important;
 }
 
-/* Remove the hr below breadcrumbs */
+/* Remove hr below breadcrumbs */
 div[role="navigation"] hr,
 .wy-breadcrumbs ~ hr {
   display: none !important;
