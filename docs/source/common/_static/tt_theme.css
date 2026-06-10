@@ -1095,7 +1095,7 @@ html.writer-html5 .rst-content dl.py > dt {
 
 /* Signature box — display:block so inline spans flow naturally */
 /* Supports both C++ (dl.cpp.function) and Python (dl.py.function/class) */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class > dt.sig,
+.rst-content dl.cpp.function > dt.sig,
 .rst-content dl.py.function > dt.sig,
 .rst-content dl.py.class > dt.sig {
   display: block !important;
@@ -1117,7 +1117,9 @@ html.writer-html5 .rst-content dl.py > dt {
 }
 
 /* Hide the trailing <br> Sphinx inserts inside dt */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class > dt.sig > br {
+.rst-content dl.cpp.function > dt.sig > br,
+.rst-content dl.py.function > dt.sig > br,
+.rst-content dl.py.class > dt.sig > br {
   display: none !important;
 }
 
@@ -1157,18 +1159,25 @@ html.writer-html5 .rst-content dl.py > dt {
 .tt-api-copy-btn:hover { opacity: 1 !important; }
 
 /* ── dl.cpp reset ───────────────────────────────────────────── */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class {
+.rst-content dl.cpp.function,
+.rst-content dl.py.function,
+.rst-content dl.py.class {
   width: 100% !important;
   max-width: 100% !important;
 }
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class > dd {
+
+.rst-content dl.cpp.function > dd,
+.rst-content dl.py.function > dd,
+.rst-content dl.py.class > dd {
   margin: 0 !important;
   padding: 0 !important;
   border-left: none !important;
 }
 
 /* ── Description paragraph ──────────────────────────────────── */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class > dd > p.tt-api-description {
+.rst-content dl.cpp.function > dd > p.tt-api-description,
+.rst-content dl.py.function > dd > p.tt-api-description,
+.rst-content dl.py.class > dd > p.tt-api-description {
   font-size: 16px !important;
   font-weight: 400 !important;
   color: #092221 !important;
@@ -1178,11 +1187,11 @@ html.writer-html5 .rst-content dl.py > dt {
 }
 
 /* ── Section headings (Parameters / Returns) added by JS ────── */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-section {
+.tt-api-section {
   margin-bottom: 40px;
 }
 
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-section-heading,
+.tt-api-section-heading,
 h2.tt-api-section-heading {
   font-family: "Neue Haas Unica Pro", "Degular", -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 500 !important;
@@ -1192,19 +1201,18 @@ h2.tt-api-section-heading {
   letter-spacing: 0 !important;
   margin: 0 0 24px !important;
   display: block !important;
-  /* Override generic h2 display:flex from heading rule */
   align-items: unset !important;
   gap: unset !important;
 }
 
 /* ── Parameter list ─────────────────────────────────────────── */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-param-list {
+.tt-api-param-list {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-param-row {
+.tt-api-param-row {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1213,27 +1221,25 @@ h2.tt-api-section-heading {
   margin-bottom: 16px;
 }
 
-/* "name (type)" line */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-param-name {
+.tt-api-param-name {
   font-size: 16px !important;
   line-height: 1.35 !important;
   margin: 0 !important;
   letter-spacing: 0 !important;
 }
 
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-param-name {
+.tt-param-name {
   font-weight: 500 !important;
   color: #092221 !important;
 }
 
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-param-type {
+.tt-param-type {
   font-weight: 400 !important;
   color: #3a5452 !important;
   letter-spacing: 0.25px !important;
 }
 
-/* Description */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class .tt-api-param-desc {
+.tt-api-param-desc {
   font-size: 14px !important;
   font-weight: 400 !important;
   color: #092221 !important;
@@ -1243,7 +1249,9 @@ h2.tt-api-section-heading {
 }
 
 /* Hide raw docutils table (replaced by JS list) */
-.rst-content dl.cpp.function, .rst-content dl.py.function, .rst-content dl.py.class table.docutils {
+.rst-content dl.cpp.function table.docutils,
+.rst-content dl.py.function table.docutils,
+.rst-content dl.py.class table.docutils {
   display: none !important;
 }
 
