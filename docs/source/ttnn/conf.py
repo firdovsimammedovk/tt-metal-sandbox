@@ -39,10 +39,15 @@ try:
 except Exception:
     pass
 
-# Fall back to mocking ttnn if the C extension is not available
+# Fall back to mocking ttnn if it's not fully importable
 import subprocess as _sp, os as _os
 _env = {k: v for k, v in _os.environ.items() if k != "PYTHONPATH"}
-if _sp.run([sys.executable, "-c", "import ttnn._ttnn"], capture_output=True, env=_env).returncode != 0:
+_check = _sp.run(
+    [sys.executable, "-c",
+     "import ttnn; assert hasattr(ttnn, 'open_device'), 'no open_device'; print('ok')"],
+    capture_output=True, text=True, env=_env,
+)
+if _check.returncode != 0 or "ok" not in _check.stdout:
     autodoc_mock_imports = ["ttnn"]
 
 source_suffix = {

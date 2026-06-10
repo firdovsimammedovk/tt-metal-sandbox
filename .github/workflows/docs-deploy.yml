@@ -30,17 +30,10 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-
-      - name: Restore docs virtualenv cache
-        id: cache-docs-venv
-        uses: actions/cache@v4
-        with:
-          path: .ci-docs-venv
-          key: ${{ runner.os }}-docs-venv-py311-${{ hashFiles('docs/requirements-docs.txt', 'setup.py', 'pyproject.toml') }}
+          python-version: "3.10"
 
       - name: Restore C++ build cache
         id: cache-build
@@ -49,94 +42,65 @@ jobs:
           path: |
             build
             build_Release
-          key: ${{ runner.os }}-docs-build-${{ hashFiles('build_metal.sh', 'CMakeLists.txt', 'cmake/**/*.cmake', 'tt_metal/CMakeLists.txt', 'ttnn/CMakeLists.txt') }}
+          key: ${{ runner.os }}-docs-build-py310-${{ hashFiles('build_metal.sh', 'CMakeLists.txt', 'cmake/**/*.cmake', 'tt_metal/CMakeLists.txt', 'ttnn/CMakeLists.txt') }}
           restore-keys: |
+            ${{ runner.os }}-docs-build-py310-
             ${{ runner.os }}-docs-build-
-
-      - name: Create and activate docs virtualenv
-        run: |
-          python3 -m venv .ci-docs-venv
-          echo "VIRTUAL_ENV=${{ github.workspace }}/.ci-docs-venv" >> "$GITHUB_ENV"
-          echo "${{ github.workspace }}/.ci-docs-venv/bin" >> "$GITHUB_PATH"
 
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y doxygen graphviz ninja-build rsync clang lld \
-            libnuma-dev libhwloc-dev libopenmpi-dev openmpi-bin pandoc
-          sudo ln -sf "$(command -v clang)" /usr/local/bin/clang-20 2>/dev/null || true
-          sudo ln -sf "$(command -v clang++)" /usr/local/bin/clang++-20 2>/dev/null || true
+          sudo apt-get install -y doxygen pandoc
 
-      - name: Install docs Python requirements
+      - name: Install docs requirements
         run: |
           pip install --upgrade pip
           pip install -r docs/requirements-docs.txt
 
-      - name: Check if ttnn backend already importable
+      - name: Install ttnn from PyPI (cp310 wheel)
+        run: |
+          pip install ttnn && echo "ttnn installed from PyPI" || echo "::warning::PyPI ttnn install failed"
+
+      - name: Verify ttnn import
         id: check-ttnn
         run: |
-          if python -c "import ttnn._ttnn" 2>/dev/null; then
-            echo "ttnn_ready=true" >> "$GITHUB_OUTPUT"
-            echo "ttnn._ttnn already available"
+          if python -c "import ttnn._ttnn; print('ttnn._ttnn OK')" 2>&1; then
+            echo "ttnn_ok=true" >> "$GITHUB_OUTPUT"
+            echo "ttnn.open_device exists:" $(python -c "import ttnn; print(hasattr(ttnn, 'open_device'))")
           else
-            echo "ttnn_ready=false" >> "$GITHUB_OUTPUT"
-            echo "ttnn._ttnn not yet available — will build"
+            echo "ttnn_ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::ttnn._ttnn not importable — docs will use mock stubs"
           fi
 
-      - name: Build native prerequisites (best effort)
-        if: steps.cache-build.outputs.cache-hit != 'true' && steps.check-ttnn.outputs.ttnn_ready != 'true'
+      - name: Build from source if PyPI import failed
+        if: steps.check-ttnn.outputs.ttnn_ok != 'true' && steps.cache-build.outputs.cache-hit != 'true'
         run: |
-          pip install --upgrade pip setuptools wheel setuptools-scm
-          set +e
-          if [[ -x ./build_metal.sh ]]; then
-            chmod +x ./build_metal.sh
-            ./build_metal.sh --disable-profiler
-          else
-            cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=build -DENABLE_TRACY=OFF
-            cmake --build build
-            cmake --install build
-          fi
-          build_exit=$?
-          set -e
-          echo "Native build exit code: $build_exit"
-
-      - name: Install SFPI toolchain (best effort)
-        if: steps.check-ttnn.outputs.ttnn_ready != 'true'
-        run: |
+          pip install --upgrade setuptools wheel setuptools-scm
+          sudo apt-get install -y ninja-build clang lld libnuma-dev libhwloc-dev libopenmpi-dev openmpi-bin graphviz rsync
+          sudo ln -sf "$(command -v clang)" /usr/local/bin/clang-20 2>/dev/null || true
+          sudo ln -sf "$(command -v clang++)" /usr/local/bin/clang++-20 2>/dev/null || true
           if [[ ! -x "/opt/tenstorrent/sfpi/compiler/bin/riscv-tt-elf-g++" ]]; then
             chmod +x ./install_dependencies.sh
-            sudo ./install_dependencies.sh --sfpi || echo "::warning::SFPI install failed — continuing"
-          else
-            echo "SFPI already present"
+            sudo ./install_dependencies.sh --sfpi || echo "::warning::SFPI install failed"
           fi
-
-      - name: Install ttnn Python package (best effort)
-        if: steps.check-ttnn.outputs.ttnn_ready != 'true'
-        run: |
-          pip install --upgrade pip setuptools wheel setuptools-scm
           set +e
-          if [[ -f "build/lib/_ttnn.so" && -d "build/lib" && -d "runtime" ]]; then
-            echo "Installing from precompiled artifacts..."
-            TT_FROM_PRECOMPILED_DIR="${GITHUB_WORKSPACE}" pip install --force-reinstall .
-          else
-            echo "Building ttnn wheel via CMake..."
-            CIBUILDWHEEL=1 CIBW_BUILD_TYPE=Release pip install --force-reinstall .
-          fi
-          pip_exit=$?
+          chmod +x ./build_metal.sh && ./build_metal.sh --disable-profiler
+          build_exit=$?
           set -e
-          if [ "$pip_exit" -ne 0 ]; then
-            echo "::warning::pip install . failed (exit $pip_exit) — trying PyPI wheel"
-            pip install "ttnn==0.71.2" || echo "::warning::PyPI ttnn install also failed"
+          echo "build_metal exit: $build_exit"
+          if [[ -f "build/lib/_ttnn.so" && -d "build/lib" && -d "runtime" ]]; then
+            TT_FROM_PRECOMPILED_DIR="${GITHUB_WORKSPACE}" pip install --force-reinstall . || \
+              CIBUILDWHEEL=1 CIBW_BUILD_TYPE=Release pip install --force-reinstall . || \
+              echo "::warning::pip install . failed"
+          else
+            CIBUILDWHEEL=1 CIBW_BUILD_TYPE=Release pip install --force-reinstall . || \
+              echo "::warning::CMake wheel build failed"
           fi
 
-      - name: Verify ttnn availability (informational)
+      - name: Final ttnn check
         run: |
-          if python -c "import ttnn._ttnn; print('ttnn._ttnn OK:', ttnn.__version__ if hasattr(ttnn, '__version__') else 'version unknown')" 2>&1; then
-            echo "Real ttnn available — API docs will have full signatures"
-          else
-            echo "::warning::ttnn._ttnn not importable — API docs will use mock stubs"
-          fi
+          python -c "import ttnn._ttnn; print('ttnn._ttnn final check: OK')" 2>&1 || \
+            echo "::warning::ttnn._ttnn still not importable — docs will use mock stubs"
 
       - name: Build Doxygen XML
         run: doxygen docs/Doxyfile || echo "::warning::Doxygen failed — C++ API pages skipped"
