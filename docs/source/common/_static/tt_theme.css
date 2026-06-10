@@ -1009,7 +1009,7 @@ html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(
 }
 
 .wy-nav-content {
-  background: #ffffff;
+  background: var(--color-background) !important;
 }
 
 /* Breadcrumbs */
