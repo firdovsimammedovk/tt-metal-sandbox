@@ -1,54 +1,50 @@
-/* api_style.js — transforms API pages to match Figma design (node 238:7535) */
+/* api_style.js — transforms API pages to match Figma design (node 238:7535 + 55-4153) */
 (function () {
   "use strict";
 
-  /* ─── helpers ────────────────────────────────────────────────── */
+  /* ─── helpers ─────────────────────────────────────────────────── */
   function copyBtn() {
     var btn = document.createElement("button");
     btn.className = "tt-api-copy-btn";
     btn.title = "Copy";
-    btn.innerHTML =
-      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    var iconCopy =
+      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none">' +
       '<rect x="7" y="7" width="9" height="9" rx="1.5" stroke="#678583" stroke-width="1.5"/>' +
       '<path d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-7A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14H6" stroke="#678583" stroke-width="1.5" stroke-linecap="round"/>' +
       "</svg>";
+    var iconDone =
+      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none">' +
+      '<path d="M4 10l4 4 8-8" stroke="#1e86a9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>";
+    btn.innerHTML = iconCopy;
     btn.addEventListener("click", function () {
-      var text = btn.closest(".tt-api-sig-box")
-        ? btn.closest(".tt-api-sig-box").textContent.replace(/\s+/g, " ").trim()
-        : "";
+      var box = btn.closest(".tt-api-sig-box");
+      var text = box ? box.textContent.replace(/\s+/g, " ").trim() : "";
       navigator.clipboard && navigator.clipboard.writeText(text);
-      btn.innerHTML =
-        '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="#1e86a9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      setTimeout(function () {
-        btn.innerHTML =
-          '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-          '<rect x="7" y="7" width="9" height="9" rx="1.5" stroke="#678583" stroke-width="1.5"/>' +
-          '<path d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-7A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14H6" stroke="#678583" stroke-width="1.5" stroke-linecap="round"/>' +
-          "</svg>";
-      }, 1500);
+      btn.innerHTML = iconDone;
+      setTimeout(function () { btn.innerHTML = iconCopy; }, 1500);
     });
     return btn;
   }
 
   function makeSection(title) {
-    var section = document.createElement("div");
-    section.className = "tt-api-section";
-    var h = document.createElement("p");
-    h.className = "tt-api-section-heading";
-    h.textContent = title;
-    section.appendChild(h);
-    return section;
+    var wrap = document.createElement("div");
+    wrap.className = "tt-api-section";
+    var heading = document.createElement("p");
+    heading.className = "tt-api-section-heading";
+    heading.textContent = title;
+    wrap.appendChild(heading);
+    return wrap;
   }
 
   function makeParamRow(nameHtml, typeText, descText) {
     var row = document.createElement("div");
     row.className = "tt-api-param-row";
-
     var nameP = document.createElement("p");
     nameP.className = "tt-api-param-name";
     var nameSpan = document.createElement("span");
     nameSpan.className = "tt-param-name";
-    nameSpan.innerHTML = nameHtml;
+    nameSpan.textContent = nameHtml;
     nameP.appendChild(nameSpan);
     if (typeText) {
       var typeSpan = document.createElement("span");
@@ -57,7 +53,6 @@
       nameP.appendChild(typeSpan);
     }
     row.appendChild(nameP);
-
     if (descText) {
       var descP = document.createElement("p");
       descP.className = "tt-api-param-desc";
@@ -67,96 +62,109 @@
     return row;
   }
 
-  /* ─── Transform Python `dl.py.data` (TTNN-style) ─────────────── */
+  /* ─── Python dl.py.data / dl.py.function (TTNN autodoc) ──────── */
   function transformPyData() {
-    var blocks = document.querySelectorAll("dl.py.data, dl.py.function, dl.py.class, dl.py.method");
+    var blocks = document.querySelectorAll(
+      "dl.py.data, dl.py.function, dl.py.class, dl.py.method"
+    );
     blocks.forEach(function (dl) {
       var dt = dl.querySelector("dt.sig");
       var dd = dl.querySelector("dd");
       if (!dt || !dd) return;
 
-      /* 1 — Signature box */
+      /* 1 – Signature box */
       dt.classList.add("tt-api-sig-box");
-      var headerlink = dt.querySelector("a.headerlink");
-      if (headerlink) headerlink.replaceWith(copyBtn());
+      var hl = dt.querySelector("a.headerlink");
+      if (hl) hl.replaceWith(copyBtn());
 
-      /* 2 — Description: first plain <p> */
+      /* 2 – Description: second <p> or first non-signature-like <p> */
       var allP = Array.from(dd.querySelectorAll(":scope > p"));
-      var descP = allP.find(function (p) {
-        return !p.classList.contains("rubric") && p.textContent.trim().length > 0;
+      /* Skip first paragraph if it looks like raw signature continuation */
+      var descP = allP.find(function (p, i) {
+        var txt = p.textContent.trim();
+        if (p.classList.contains("rubric")) return false;
+        /* First para often contains raw signature args — skip if no spaces and has colons */
+        if (i === 0 && txt.indexOf(":") !== -1 && txt.indexOf(" ") === -1) return false;
+        return txt.length > 0 && txt.length < 500;
       });
       if (descP) descP.classList.add("tt-api-description");
 
-      /* 3 — field-list (Keyword Arguments + Returns) */
+      /* 3 – field-list (Keyword Arguments + Returns) */
       var fieldList = dd.querySelector("dl.field-list");
-      if (!fieldList) return;
+      if (fieldList) {
+        /* Keyword Arguments */
+        var kwDt = fieldList.querySelector("dt.field-odd");
+        var kwDd = fieldList.querySelector("dd.field-odd");
+        if (kwDt && kwDd) {
+          var kwSection = makeSection("Keyword Arguments");
+          var kwList = document.createElement("div");
+          kwList.className = "tt-api-param-list";
+          kwDd.querySelectorAll("li").forEach(function (li) {
+            var p = li.querySelector("p");
+            if (!p) return;
+            var strong = p.querySelector("strong");
+            var ems = p.querySelectorAll("em");
+            var name = strong ? strong.textContent.trim() : "";
+            var typeText = Array.from(ems)
+              .map(function (e) { return e.textContent.trim(); })
+              .filter(function (t) { return t && t !== ","; })
+              .join(", ")
+              .replace(/,\s*,/g, ",");
+            var fullText = p.textContent;
+            var dash = fullText.indexOf("–"); /* en-dash – */
+            var desc = dash !== -1 ? fullText.slice(dash + 1).trim() : "";
+            /* Also try hyphen-minus fallback */
+            if (!desc) {
+              dash = fullText.indexOf(" - ");
+              desc = dash !== -1 ? fullText.slice(dash + 3).trim() : "";
+            }
+            kwList.appendChild(makeParamRow(name, typeText, desc));
+          });
+          kwSection.appendChild(kwList);
+          fieldList.parentNode.insertBefore(kwSection, fieldList);
+        }
 
-      var insertBefore = fieldList;
+        /* Returns */
+        var retDt = fieldList.querySelector("dt.field-even");
+        var retDd = fieldList.querySelector("dd.field-even");
+        if (retDt && retDd) {
+          var retSection = makeSection("Returns");
+          var retList = document.createElement("div");
+          retList.className = "tt-api-param-list";
+          var retFull = retDd.textContent.trim();
+          var retDash = retFull.indexOf("–");
+          var retName = retDash !== -1 ? retFull.slice(0, retDash).trim() : retFull;
+          var retDesc = retDash !== -1 ? retFull.slice(retDash + 1).trim() : "";
+          retList.appendChild(makeParamRow(retName, "", retDesc));
+          retSection.appendChild(retList);
+          fieldList.parentNode.insertBefore(retSection, fieldList);
+        }
 
-      /* Keyword Arguments */
-      var kwDt = fieldList.querySelector("dt.field-odd");
-      var kwDd = fieldList.querySelector("dd.field-odd");
-      if (kwDt && kwDd) {
-        var kwSection = makeSection("Keyword Arguments");
-        var kwList = document.createElement("div");
-        kwList.className = "tt-api-param-list";
-
-        var items = kwDd.querySelectorAll("li");
-        items.forEach(function (li) {
-          var p = li.querySelector("p");
-          if (!p) return;
-          var strong = p.querySelector("strong");
-          var ems = p.querySelectorAll("em");
-          var name = strong ? strong.textContent : "";
-          var typeText = Array.from(ems).map(function (e) { return e.textContent; }).join("").replace(/,\s*/g, ", ");
-          // Description = text after " – "
-          var fullText = p.textContent;
-          var dashIdx = fullText.indexOf(" – ");
-          var desc = dashIdx !== -1 ? fullText.slice(dashIdx + 3).trim() : "";
-          kwList.appendChild(makeParamRow(name, typeText, desc));
-        });
-
-        kwSection.appendChild(kwList);
-        fieldList.parentNode.insertBefore(kwSection, insertBefore);
+        /* Completely remove the field-list from DOM (not just hide) */
+        fieldList.parentNode.removeChild(fieldList);
       }
 
-      /* Returns */
-      var retDt = fieldList.querySelector("dt.field-even");
-      var retDd = fieldList.querySelector("dd.field-even");
-      if (retDt && retDd) {
-        var retSection = makeSection("Returns");
-        var retList = document.createElement("div");
-        retList.className = "tt-api-param-list";
-
-        var retText = retDd.textContent.trim();
-        // "TypeName – description"
-        var dashIdx2 = retText.indexOf(" – ");
-        var retName = dashIdx2 !== -1 ? retText.slice(0, dashIdx2).trim() : retText;
-        var retDesc = dashIdx2 !== -1 ? retText.slice(dashIdx2 + 3).trim() : "";
-        retList.appendChild(makeParamRow(retName, "", retDesc));
-        retSection.appendChild(retList);
-        fieldList.parentNode.insertBefore(retSection, insertBefore);
-      }
-
-      /* Hide the raw field-list */
-      fieldList.style.display = "none";
+      /* Also remove any leftover field-list dl children */
+      dd.querySelectorAll("dl.field-list").forEach(function (fl) {
+        fl.parentNode.removeChild(fl);
+      });
     });
   }
 
-  /* ─── Transform C++ `dl.cpp.*` (tt-metalium breathe) ─────────── */
+  /* ─── C++ dl.cpp.* (tt-metalium breathe) ─────────────────────── */
   function transformCpp() {
-    var blocks = document.querySelectorAll("dl.cpp.function, dl.cpp.type, dl.cpp.struct, dl.cpp.enum");
+    var blocks = document.querySelectorAll(
+      "dl.cpp.function, dl.cpp.type, dl.cpp.struct, dl.cpp.enum"
+    );
     blocks.forEach(function (dl) {
       var dt = dl.querySelector("dt.sig");
       var dd = dl.querySelector("dd");
       if (!dt || !dd) return;
 
-      /* Signature box */
       dt.classList.add("tt-api-sig-box");
-      var headerlink = dt.querySelector("a.headerlink");
-      if (headerlink) headerlink.replaceWith(copyBtn());
+      var hl = dt.querySelector("a.headerlink");
+      if (hl) hl.replaceWith(copyBtn());
 
-      /* Description */
       var paragraphs = Array.from(dd.querySelectorAll(":scope > p"));
       var descPara = null, returnPara = null;
       paragraphs.forEach(function (p) {
@@ -166,7 +174,6 @@
       });
       if (descPara) descPara.classList.add("tt-api-description");
 
-      /* Parameters table */
       var table = dd.querySelector("table.docutils");
       if (table) {
         var rows = table.querySelectorAll("tbody tr");
@@ -182,12 +189,12 @@
             list.appendChild(makeParamRow(name, type, desc));
           });
           section.appendChild(list);
-          dd.insertBefore(section, table.closest("p") || table);
-          (table.closest("p") || table).remove();
+          var tableContainer = table.closest("p") || table;
+          tableContainer.parentNode.insertBefore(section, tableContainer);
+          tableContainer.parentNode.removeChild(tableContainer);
         }
       }
 
-      /* Return value */
       if (returnPara) {
         var retText = returnPara.textContent.replace(/Return value:\s*/i, "").trim();
         var retSection = makeSection("Returns");
@@ -195,15 +202,61 @@
         retList.className = "tt-api-param-list";
         retList.appendChild(makeParamRow(retText, "", ""));
         retSection.appendChild(retList);
-        dd.insertBefore(retSection, returnPara);
-        returnPara.remove();
+        returnPara.parentNode.insertBefore(retSection, returnPara);
+        returnPara.parentNode.removeChild(returnPara);
       }
+    });
+  }
+
+  /* ─── API listing page: autosummary tables → Figma cards ─────── */
+  function transformApiIndex() {
+    var tables = document.querySelectorAll("table.autosummary");
+    tables.forEach(function (table) {
+      var container = document.createElement("div");
+      container.className = "tt-api-card-list";
+
+      table.querySelectorAll("tbody tr").forEach(function (row) {
+        var cells = row.querySelectorAll("td");
+        if (!cells.length) return;
+
+        var card = document.createElement("div");
+        card.className = "tt-api-card";
+
+        /* Function name — preserve link */
+        var nameCell = cells[0];
+        var link = nameCell.querySelector("a");
+        var nameDiv = document.createElement("div");
+        nameDiv.className = "tt-api-card-name";
+        if (link) {
+          var a = document.createElement("a");
+          a.href = link.href;
+          a.textContent = link.textContent.trim();
+          nameDiv.appendChild(a);
+        } else {
+          nameDiv.textContent = nameCell.textContent.trim();
+        }
+        card.appendChild(nameDiv);
+
+        /* Description */
+        if (cells[1] && cells[1].textContent.trim()) {
+          var descDiv = document.createElement("div");
+          descDiv.className = "tt-api-card-desc";
+          descDiv.textContent = cells[1].textContent.trim();
+          card.appendChild(descDiv);
+        }
+
+        container.appendChild(card);
+      });
+
+      table.parentNode.insertBefore(container, table);
+      table.parentNode.removeChild(table);
     });
   }
 
   function run() {
     transformPyData();
     transformCpp();
+    transformApiIndex();
   }
 
   if (document.readyState === "loading") {

@@ -1265,7 +1265,71 @@ h2.tt-api-section-heading {
   display: none !important;
 }
 
+/* Hide field-list via CSS too (JS also removes from DOM) */
+.rst-content dl.py > dd > dl.field-list {
+  display: none !important;
+}
+
 /* Hide headerlink in h1 */
 .rst-content section > h1 > a.headerlink {
   display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   API INDEX CARDS (Figma 55-4153) — autosummary tables → cards
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Section headings (h2) on API index pages */
+.rst-content section > h2 {
+  font-family: var(--font-main) !important;
+  font-weight: 500 !important;
+  font-size: 22px !important;
+  line-height: 1.3 !important;
+  color: #092221 !important;
+  letter-spacing: 0 !important;
+  margin: 40px 0 16px !important;
+}
+
+.tt-api-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.tt-api-card {
+  background: #ffffff;
+  border: 1px solid #c7d9d8;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tt-api-card-name {
+  font-family: var(--font-mono) !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+
+.tt-api-card-name a,
+.tt-api-card-name a:visited {
+  color: #1e86a9 !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+.tt-api-card-name a:hover {
+  text-decoration: underline !important;
+}
+
+.tt-api-card-desc {
+  font-family: var(--font-main) !important;
+  font-size: 14px !important;
+  color: #3a5452 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.25px !important;
 }
