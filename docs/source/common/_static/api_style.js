@@ -3,7 +3,8 @@
   "use strict";
 
   function transformApiPage() {
-    var fnBlocks = document.querySelectorAll("dl.cpp.function, dl.cpp.type, dl.cpp.struct, dl.cpp.enum");
+    // Support both C++ (breathe: dl.cpp.function) and Python (autodoc: dl.py.function)
+    var fnBlocks = document.querySelectorAll("dl.cpp.function, dl.cpp.type, dl.cpp.struct, dl.cpp.enum, dl.py.function, dl.py.class, dl.py.method");
     if (!fnBlocks.length) return;
 
     fnBlocks.forEach(function (dl) {
