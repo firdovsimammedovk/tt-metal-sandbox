@@ -208,6 +208,59 @@
     });
   }
 
+  /* ─── Example blocks → Figma 240:8481 ───────────────────────── */
+  function transformExamples() {
+    var iconCopy =
+      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none">' +
+      '<rect x="7" y="7" width="9" height="9" rx="1.5" stroke="#678583" stroke-width="1.5"/>' +
+      '<path d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-7A1.5 1.5 0 0 0 3 5.5v7A1.5 1.5 0 0 0 4.5 14H6" stroke="#678583" stroke-width="1.5" stroke-linecap="round"/>' +
+      "</svg>";
+    var iconDone =
+      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none">' +
+      '<path d="M4 10l4 4 8-8" stroke="#1e86a9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>";
+
+    document.querySelectorAll("p.rubric").forEach(function (rubric) {
+      var codeEl = rubric.nextElementSibling;
+      if (!codeEl) return;
+
+      /* Wrap rubric + code block in .tt-example-block */
+      var wrapper = document.createElement("div");
+      wrapper.className = "tt-example-block";
+
+      /* Header bar */
+      var header = document.createElement("div");
+      header.className = "tt-example-header";
+      header.textContent = rubric.textContent.trim();
+
+      rubric.parentNode.insertBefore(wrapper, rubric);
+      wrapper.appendChild(header);
+      wrapper.appendChild(codeEl);   /* moves codeEl into wrapper */
+      rubric.parentNode.removeChild(rubric);
+
+      /* Copy button inside .highlight */
+      var highlight = wrapper.querySelector(".highlight");
+      if (highlight) {
+        var btn = document.createElement("button");
+        btn.className = "tt-example-copy-btn";
+        btn.title = "Copy code";
+        btn.innerHTML = iconCopy;
+        btn.addEventListener("click", function () {
+          var pre = highlight.querySelector("pre");
+          /* Strip line-number prompts (>>>) for clean copy */
+          var lines = pre ? pre.textContent.split("\n") : [];
+          var clean = lines.map(function (l) {
+            return l.replace(/^>>>?\s?/, "");
+          }).join("\n").trim();
+          navigator.clipboard && navigator.clipboard.writeText(clean);
+          btn.innerHTML = iconDone;
+          setTimeout(function () { btn.innerHTML = iconCopy; }, 1500);
+        });
+        highlight.appendChild(btn);
+      }
+    });
+  }
+
   /* ─── API listing page: autosummary tables → Figma cards ─────── */
   function transformApiIndex() {
     var tables = document.querySelectorAll("table.autosummary");
@@ -256,6 +309,7 @@
   function run() {
     transformPyData();
     transformCpp();
+    transformExamples();
     transformApiIndex();
   }
 

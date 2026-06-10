@@ -1276,6 +1276,93 @@ h2.tt-api-section-heading {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   EXAMPLE BLOCK — Figma node 240:8481
+   ═══════════════════════════════════════════════════════════════ */
+
+.tt-example-block {
+  border: 1px solid #c7d9d8 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  margin-top: 40px !important;
+  box-sizing: border-box !important;
+}
+
+.tt-example-header {
+  background: #e5f2f1 !important;
+  padding: 8px 16px !important;
+  font-family: var(--font-main) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #092221 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.25px !important;
+}
+
+.tt-example-block .highlight,
+.tt-example-block .doctest {
+  background: #ffffff !important;
+  padding: 20px !important;
+  position: relative !important;
+  margin: 0 !important;
+}
+
+.tt-example-block pre {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: #092221 !important;
+  background: none !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+}
+
+/* Line numbers */
+.tt-example-block .gp,
+.tt-example-block .linenos {
+  color: #678583 !important;
+  user-select: none !important;
+}
+
+/* Inline code tokens */
+.tt-example-block .n,
+.tt-example-block .nb,
+.tt-example-block .mi,
+.tt-example-block .o,
+.tt-example-block .p {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+}
+
+/* Copy button for example block — 32×32 bordered button, top-right of code area */
+.tt-example-copy-btn {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid #c7d9d8 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  opacity: 0.8 !important;
+  transition: opacity 120ms ease !important;
+  box-sizing: border-box !important;
+}
+
+.tt-example-copy-btn:hover {
+  opacity: 1 !important;
+  border-color: #092221 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    API INDEX CARDS (Figma 55-4153) — autosummary tables → cards
    ═══════════════════════════════════════════════════════════════ */
 
