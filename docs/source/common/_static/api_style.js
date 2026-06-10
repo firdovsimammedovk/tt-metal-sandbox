@@ -238,24 +238,58 @@
       wrapper.appendChild(codeEl);   /* moves codeEl into wrapper */
       rubric.parentNode.removeChild(rubric);
 
-      /* Copy button inside .highlight */
+      /* Add line numbers + copy button inside .highlight */
       var highlight = wrapper.querySelector(".highlight");
       if (highlight) {
+        var pre = highlight.querySelector("pre");
+        if (pre) {
+          /* Build line-numbers layout */
+          var rawText = pre.textContent || "";
+          /* Trim trailing empty line */
+          var rawLines = rawText.replace(/\n$/, "").split("\n");
+          var lineCount = rawLines.length;
+
+          /* Container: linenos | code */
+          var linesWrap = document.createElement("div");
+          linesWrap.className = "tt-example-lines";
+
+          var linenosDiv = document.createElement("div");
+          linenosDiv.className = "tt-example-linenos";
+          for (var i = 1; i <= lineCount; i++) {
+            var numSpan = document.createElement("span");
+            numSpan.textContent = i;
+            linenosDiv.appendChild(numSpan);
+          }
+
+          var codeDiv = document.createElement("div");
+          codeDiv.className = "tt-example-code";
+          codeDiv.appendChild(pre.cloneNode(true));
+
+          linesWrap.appendChild(linenosDiv);
+          linesWrap.appendChild(codeDiv);
+
+          /* Replace original highlight content with new layout */
+          highlight.innerHTML = "";
+          highlight.style.padding = "0";
+          highlight.appendChild(linesWrap);
+        }
+
+        /* Copy button — absolute top-right of the highlight area */
         var btn = document.createElement("button");
         btn.className = "tt-example-copy-btn";
         btn.title = "Copy code";
         btn.innerHTML = iconCopy;
         btn.addEventListener("click", function () {
-          var pre = highlight.querySelector("pre");
-          /* Strip line-number prompts (>>>) for clean copy */
-          var lines = pre ? pre.textContent.split("\n") : [];
+          var codePre = highlight.querySelector("pre");
+          var lines = codePre ? codePre.textContent.replace(/\n$/, "").split("\n") : [];
           var clean = lines.map(function (l) {
-            return l.replace(/^>>>?\s?/, "");
+            return l.replace(/^>>>\s?/, "");
           }).join("\n").trim();
           navigator.clipboard && navigator.clipboard.writeText(clean);
           btn.innerHTML = iconDone;
           setTimeout(function () { btn.innerHTML = iconCopy; }, 1500);
         });
+        highlight.style.position = "relative";
         highlight.appendChild(btn);
       }
     });
