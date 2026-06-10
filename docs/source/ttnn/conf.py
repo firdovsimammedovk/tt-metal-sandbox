@@ -39,12 +39,12 @@ try:
 except Exception:
     pass
 
-# Fall back to mocking ttnn if it's not fully importable
+# Mock ttnn if ttnn.experimental (referenced in api.rst) is not importable.
+# autosummary raises a fatal ExtensionError if it can't import any listed module.
 import subprocess as _sp, os as _os
 _env = {k: v for k, v in _os.environ.items() if k != "PYTHONPATH"}
 _check = _sp.run(
-    [sys.executable, "-c",
-     "import ttnn; assert hasattr(ttnn, 'open_device'), 'no open_device'; print('ok')"],
+    [sys.executable, "-c", "import ttnn.experimental; print('ok')"],
     capture_output=True, text=True, env=_env,
 )
 if _check.returncode != 0 or "ok" not in _check.stdout:
