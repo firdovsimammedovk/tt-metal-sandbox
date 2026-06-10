@@ -63,4 +63,3 @@ def setup(app):
 
 breathe_projects = {"ttmetaldoxygen": "../../doxygen_build/xml/"}
 breathe_default_project = "ttmetaldoxygen"
-# Trigger build
