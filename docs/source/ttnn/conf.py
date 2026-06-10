@@ -27,31 +27,10 @@ extensions = [
     "myst_parser",
 ]
 
-# op_documenter / doc_modifier require a full tt-metal build environment
-# and crash sphinx when the C extension tries to introspect ttnn in CI.
-# Disabled in sandbox — plain autodoc provides signatures without them.
-
-# autosummary raises a fatal ExtensionError when it can't import a listed module.
-# Strategy: check each layer separately so we mock only what's needed.
-import subprocess as _sp, os as _os
-
-def _can_import(mod):
-    _env = {k: v for k, v in _os.environ.items() if k != "PYTHONPATH"}
-    r = _sp.run(
-        [sys.executable, "-c", f"import {mod}; print('ok')"],
-        capture_output=True, text=True,
-        env=_env,
-    )
-    return r.returncode == 0 and "ok" in r.stdout
-
-if not _can_import("ttnn"):
-    # ttnn itself not importable — mock everything
-    autodoc_mock_imports = ["ttnn"]
-elif not _can_import("ttnn.experimental"):
-    # Real ttnn works but experimental submodule doesn't — mock only experimental
-    # so that open_device, matmul, etc. get real docstrings
-    autodoc_mock_imports = ["ttnn.experimental"]
-# else: ttnn fully available — no mocking needed
+# sphinx crashes when trying to introspect real ttnn (C extension issues in main process).
+# Mock ttnn so pages are accessible, even with empty stubs.
+# TODO: build ttnn from source in separate environment to get real docs.
+autodoc_mock_imports = ["ttnn"]
 
 source_suffix = {
     ".rst": "restructuredtext",
