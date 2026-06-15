@@ -540,7 +540,7 @@ i {
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: var(--wide);
-  padding: 8px 8px 8px 0 !important;
+  padding: 8px 12px !important;
   margin: 0;
   border-radius: 4px;
   display: flex !important;
@@ -558,20 +558,20 @@ i {
   padding-left: 8px;
 }
 
-/* Sub-items */
+/* Sub-items — keep the 12px text inset so hover/active bg never glues to text */
 .wy-menu-vertical .toctree-l2 a {
-  padding-left: 0 !important;
+  padding-left: 12px !important;
   font-size: 13px;
 }
 
 .wy-menu-vertical .toctree-l3 a {
-  padding-left: 0 !important;
+  padding-left: 12px !important;
   font-size: 13px;
 }
 
 .wy-menu-vertical .toctree-l4 a,
 .wy-menu-vertical .toctree-l5 a {
-  padding-left: 0 !important;
+  padding-left: 12px !important;
   font-size: 12px;
 }
 
@@ -614,7 +614,7 @@ li.toctree-l1.current>a,
   border-right: none !important;
   color: var(--color-foreground) !important;
   font-weight: 500;
-  padding-left: 10px !important;
+  padding-left: 12px !important;
 }
 
 /* Also remove border-right from any current link */
@@ -1349,20 +1349,21 @@ h2.tt-api-section-heading {
 
 .tt-example-header {
   background: #e5f2f1 !important;
-  padding: 8px 16px !important;
+  padding: 10px 16px !important;
   font-family: var(--font-main) !important;
   font-size: 14px !important;
-  font-weight: 400 !important;
+  font-weight: 500 !important;
   color: #092221 !important;
   line-height: 1.35 !important;
   letter-spacing: 0.25px !important;
+  border-bottom: 1px solid #c7d9d8 !important;
 }
 
 .tt-example-block .highlight,
 .tt-example-block .doctest,
 .tt-example-block .highlight-default {
   background: #ffffff !important;
-  padding: 20px 20px 20px 0 !important;
+  padding: 16px 20px !important;
   position: relative !important;
   margin: 0 !important;
   border: none !important;
@@ -1404,7 +1405,7 @@ h2.tt-api-section-heading {
   width: 100% !important;
   border-collapse: collapse !important;
   border: none !important;
-  padding: 20px !important;
+  padding: 0 !important;
   display: table !important;
   box-sizing: border-box !important;
 }
@@ -1424,19 +1425,22 @@ h2.tt-api-section-heading {
   background: transparent !important;
 }
 
-.tt-lineno {
+.tt-example-table td.tt-lineno {
   color: #678583 !important;
   text-align: right !important;
-  padding-right: 20px !important;
+  padding: 0 20px 0 4px !important;
   user-select: none !important;
   white-space: nowrap !important;
+  width: 1% !important;
   min-width: 2ch !important;
+  border-right: 1px solid #e5f2f1 !important;
 }
 
-.tt-codeline {
+.tt-example-table td.tt-codeline {
   color: #092221 !important;
   white-space: pre !important;
   width: 100% !important;
+  padding: 0 0 0 20px !important;
 }
 
 /* Keep >>> prompts gray, rest dark */

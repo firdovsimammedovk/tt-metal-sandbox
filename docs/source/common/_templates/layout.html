@@ -4,7 +4,8 @@
 {%- block extrabody %}
 {%- set _logo_url = logo_url|default(pathto('_static/' + (logo or ""), 1)) %}
 {%- set _root_doc = root_doc|default(master_doc) %}
-{%- set _home = logo_link_url|default(pathto(_root_doc)) %}
+{#- Navbar core-content links point to the core sandbox hub so they resolve cross-site -#}
+{%- set _home = "https://firdovsimammedovk.github.io/tenstorrent-sandbox/" %}
 <nav class="tt-top-nav" role="navigation" aria-label="Top navigation">
   <div class="tt-top-nav-left">
     <a href="{{ _home }}" class="tt-nav-logo">
