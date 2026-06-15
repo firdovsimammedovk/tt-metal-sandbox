@@ -47,7 +47,7 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_logo = "../common/images/tt_logo.svg"
 html_favicon = "../common/images/favicon.png"
-html_baseurl = f"/tt-metal/{_docs_version}/tt-metalium"
+html_baseurl = f"/tt-metal-sandbox/{_docs_version}/tt-metalium"
 html_static_path = ["_static", "../common/_static"]
 
 html_context = {

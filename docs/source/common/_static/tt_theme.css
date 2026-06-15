@@ -403,10 +403,17 @@ i {
 }
 
 @media screen and (max-width: 768px) {
+  /* Navbar: collapse desktop links/search, show hamburger */
   .tt-nav-links { display: none; }
   .tt-nav-search-form { display: none; }
+  .tt-nav-actions { display: none; }
   .tt-nav-hamburger { display: block; }
+  .tt-top-nav { padding: 0 16px; }
+  .tt-top-nav-right { gap: 12px; }
 }
+/* NOTE: mobile layout overrides (content offset, sidebar slide-in) live in the
+   consolidated block at the END of this file so they win source order over the
+   desktop .wy-nav-side / .wy-nav-content-wrap rules below. */
 
 /* ── Nav layout offsets ─────────────────────────────────────── */
 
@@ -1523,4 +1530,44 @@ h2.tt-api-section-heading {
   color: #3a5452 !important;
   line-height: 1.35 !important;
   letter-spacing: 0.25px !important;
+}
+
+/* ── Mobile layout (consolidated, must stay last to win source order) ── */
+
+@media screen and (max-width: 768px) {
+  /* Prevent any stray horizontal scroll on small screens. The RTD grid is
+     position:absolute, so it needs its own overflow clamp. */
+  html, body { overflow-x: hidden; max-width: 100%; }
+  .wy-grid-for-nav { overflow-x: hidden; }
+
+  /* Drop the desktop sidebar offset so the page is full-width */
+  .wy-nav-content-wrap {
+    margin-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden;
+  }
+  .wy-nav-content {
+    max-width: 100% !important;
+    padding: 1.6rem 1.2rem !important;
+    box-sizing: border-box;
+  }
+
+  /* Doc sidebar slides in from the left, below the fixed navbar */
+  .wy-nav-side {
+    left: -308px !important;
+    width: 308px !important;
+    top: var(--tt-navbar-height) !important;
+    height: calc(100% - var(--tt-navbar-height)) !important;
+    transition: left 200ms var(--transition-timing);
+    z-index: 250;
+  }
+  .wy-nav-side.shift {
+    left: 0 !important;
+  }
+
+  /* Right-side page TOC never shows on mobile */
+  .tt-page-toc {
+    display: none !important;
+  }
 }
