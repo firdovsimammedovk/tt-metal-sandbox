@@ -53,21 +53,42 @@ exclude_patterns = [
     "**/tutorials_env/**",
 ]
 
+import subprocess as _sp
+
+def _git_tags() -> list:
+    try:
+        out = _sp.check_output(
+            ["git", "tag", "-l", "v*", "--sort=-version:refname"],
+            stderr=_sp.DEVNULL,
+        ).decode().strip()
+        return [t for t in out.split("\n") if t]
+    except Exception:
+        return []
+
+_METAL_BASE = "https://firdovsimammedovk.github.io/tt-metal-sandbox/"
+_GLOBAL_CSS = "https://firdovsimammedovk.github.io/tenstorrent-sandbox/_static/tt_theme.css"
+_all_versions = ["latest"] + [t for t in _git_tags() if t != "latest"]
+_version_urls = [(v, f"{_METAL_BASE}ttnn/{v}/") for v in _all_versions]
+
 html_theme = "sphinx_rtd_theme"
 html_logo = "../common/images/tt_logo.svg"
 html_favicon = "../common/images/favicon.png"
-html_baseurl = f"/tt-metal-sandbox/{_docs_version}/ttnn"
+html_baseurl = f"{_METAL_BASE}ttnn/{_docs_version}/"
 html_static_path = ["_static", "../common/_static"]
 
 _docs_site_base = os.environ.get("DOC_SITE_BASE_URL", "https://firdovsimammedovk.github.io/tt-metal-sandbox").rstrip("/")
 
+# Load global theme from tenstorrent-sandbox CDN; local tt_theme.css adds API overrides
+html_css_files = [_GLOBAL_CSS]
+
 html_context = {
-    "logo_link_url": "https://firdovsimammedovk.github.io/tenstorrent-sandbox/",
-    "versions": get_published_versions(Path(__file__)),
+    "logo_link_url": "https://firdovsimammedovk.github.io/tenstorrent-sandbox/latest/",
+    "versions": _version_urls,
     "current_version": _docs_version,
     "docs_site_base": _docs_site_base,
     "docs_project_subpath": "ttnn",
 }
+version = _docs_version
 
 nbsphinx_execute = "never"
 
