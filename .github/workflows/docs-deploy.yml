@@ -160,6 +160,15 @@ jobs:
         run: |
           cp docs/source/index.html docs/build/html/index.html
           touch docs/build/html/.nojekyll
+          # Per-package redirects so /ttnn/ and /tt-metalium/ land on latest/
+          for PKG in tt-metalium ttnn; do
+            mkdir -p "docs/build/html/$PKG"
+            cat > "docs/build/html/$PKG/index.html" <<EOF
+          <!DOCTYPE html><html><head>
+          <meta http-equiv="refresh" content="0; url=./latest/" />
+          </head><body><a href="./latest/">latest</a></body></html>
+          EOF
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
