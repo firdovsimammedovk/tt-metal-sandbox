@@ -495,7 +495,7 @@ i {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-left: 15px;
+  padding-left: 5px;
 }
 
 .wy-menu-vertical li.current ul {
@@ -540,7 +540,7 @@ i {
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: var(--wide);
-  padding: 8px 12px !important;
+  padding: 8px 8px 8px 8px !important;
   margin: 0;
   border-radius: 4px;
   display: flex !important;
