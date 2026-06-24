@@ -54,6 +54,11 @@ exclude_patterns = [
 ]
 
 html_theme = "sphinx_rtd_theme"
+html_theme_options = {
+    "collapse_navigation": True,
+    "titles_only": True,
+    "navigation_depth": 2,
+}
 html_logo = "../common/images/tt_logo.svg"
 html_favicon = "../common/images/favicon.png"
 html_baseurl = f"/tt-metal-sandbox/{_docs_version}/ttnn"
