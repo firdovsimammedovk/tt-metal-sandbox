@@ -71,6 +71,11 @@ _all_versions = ["latest"] + [t for t in _git_tags() if t != "latest"]
 _version_urls = [(v, f"{_METAL_BASE}ttnn/{v}/") for v in _all_versions]
 
 html_theme = "sphinx_rtd_theme"
+html_theme_options = {
+    "collapse_navigation": True,
+    "titles_only": True,
+    "navigation_depth": 2,
+}
 html_logo = "../common/images/tt_logo.svg"
 html_favicon = "../common/images/favicon.png"
 html_baseurl = f"{_METAL_BASE}ttnn/{_docs_version}/"
