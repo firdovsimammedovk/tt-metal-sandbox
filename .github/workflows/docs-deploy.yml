@@ -30,7 +30,7 @@ jobs:
       DOCS_ID_NAMESPACE: tt-metal
       DOCS_INDEX_VERSION: latest
       DOCS_OUTPUT_DIR: docs/build/html
-      DOCS_SEARCH_INGEST_API_KEY: ${{ secrets.DOCS_SEARCH_INGEST_API_KEY }}
+      DOCS_SEARCH_INGEST_API_KEY: ${{ secrets.DOCS_SEARCH_INGEST_API_KEY_DOCS_TENSTORRENT }}
 
     steps:
       - name: Checkout
