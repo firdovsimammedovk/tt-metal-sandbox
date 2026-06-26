@@ -5,7 +5,7 @@
 {%- set _logo_url = logo_url|default(pathto('_static/' + (logo or ""), 1)) %}
 {%- set _root_doc = root_doc|default(master_doc) %}
 {#- Navbar core-content links point to the core sandbox hub so they resolve cross-site -#}
-{%- set _home = "https://firdovsimammedovk.github.io/tenstorrent-sandbox/latest/" %}
+{%- set _home = "https://firdovsimammedovk.github.io/tenstorrent-sandbox/" %}
 <nav class="tt-top-nav" role="navigation" aria-label="Top navigation">
   <div class="tt-top-nav-left">
     <a href="{{ _home }}" class="tt-nav-logo">
@@ -29,8 +29,8 @@
           <a href="{{ _home }}forge/index.html">TT-Forge</a>
           <a href="https://firdovsimammedovk.github.io/tt-metal-sandbox/ttnn/" target="_blank" rel="noopener">TT-NN</a>
           <a href="https://firdovsimammedovk.github.io/tt-lang-sandbox/" target="_blank" rel="noopener">TT-Lang</a>
-          <a href="https://firdovsimammedovk.github.io/tt-mlir-sandbox/latest/" target="_blank" rel="noopener">TT-MLIR</a>
-          <a href="https://firdovsimammedovk.github.io/tt-xla-sandbox/latest/" target="_blank" rel="noopener">TT-XLA</a>
+          <a href="https://firdovsimammedovk.github.io/tt-mlir-sandbox/" target="_blank" rel="noopener">TT-MLIR</a>
+          <a href="https://firdovsimammedovk.github.io/tt-xla-sandbox/" target="_blank" rel="noopener">TT-XLA</a>
           <a href="https://firdovsimammedovk.github.io/tt-metal-sandbox/tt-metalium/" target="_blank" rel="noopener">TT-Metalium</a>
         </div>
       </li>

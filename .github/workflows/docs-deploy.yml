@@ -3,7 +3,6 @@ name: Docs - Build & Deploy
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -121,62 +120,21 @@ jobs:
       - name: Build Doxygen XML
         run: doxygen docs/Doxyfile || echo "::warning::Doxygen failed — C++ API pages skipped"
 
-      - name: Build versioned TT-Metalium + TT-NN docs
+      - name: Build TT-Metalium + TT-NN docs
         run: |
           mkdir -p docs/build/html
-          VERSIONS=$(git tag -l 'v*' --sort=-version:refname | tr '\n' ' ')
-
-          # Build latest for both packages
-          DOCS_VERSION=latest REQUESTED_DOCS_PKG=tt-metalium \
-            sphinx-build docs/source/tt-metalium docs/build/html/tt-metalium/latest \
+          # Single-version site: each package published at a flat path (no /latest/).
+          REQUESTED_DOCS_PKG=tt-metalium \
+            sphinx-build docs/source/tt-metalium docs/build/html/tt-metalium \
             --keep-going || true
-          DOCS_VERSION=latest REQUESTED_DOCS_PKG=ttnn \
-            sphinx-build docs/source/ttnn docs/build/html/ttnn/latest \
+          REQUESTED_DOCS_PKG=ttnn \
+            sphinx-build docs/source/ttnn docs/build/html/ttnn \
             --keep-going 2>&1 | tail -20 || true
-
-          # Build each git tag
-          for TAG in $VERSIONS; do
-            git checkout "$TAG" -- docs/ 2>/dev/null || continue
-            DOCS_VERSION="$TAG" REQUESTED_DOCS_PKG=tt-metalium \
-              sphinx-build docs/source/tt-metalium "docs/build/html/tt-metalium/$TAG" \
-              --keep-going || true
-            DOCS_VERSION="$TAG" REQUESTED_DOCS_PKG=ttnn \
-              sphinx-build docs/source/ttnn "docs/build/html/ttnn/$TAG" \
-              --keep-going || true
-            git checkout HEAD -- docs/
-          done
-
-          # Generate versions.json
-          python - <<'PYEOF'
-          import json, subprocess
-          tags = subprocess.check_output(
-              ["git", "tag", "-l", "v*", "--sort=-version:refname"]
-          ).decode().strip().split("\n")
-          tags = [t for t in tags if t]
-          base = "https://firdovsimammedovk.github.io/tt-metal-sandbox/"
-          all_v = ["latest"] + tags
-          result = {
-              pkg: [{"name": v, "url": f"{base}{pkg}/{v}/"} for v in all_v]
-              for pkg in ["tt-metalium", "ttnn"]
-          }
-          import os; os.makedirs("docs/build/html", exist_ok=True)
-          with open("docs/build/html/versions.json", "w") as f:
-              json.dump(result, f, indent=2)
-          PYEOF
 
       - name: Copy root index
         run: |
           cp docs/source/index.html docs/build/html/index.html
           touch docs/build/html/.nojekyll
-          # Per-package redirects so /ttnn/ and /tt-metalium/ land on latest/
-          for PKG in tt-metalium ttnn; do
-            mkdir -p "docs/build/html/$PKG"
-            cat > "docs/build/html/$PKG/index.html" <<EOF
-          <!DOCTYPE html><html><head>
-          <meta http-equiv="refresh" content="0; url=./latest/" />
-          </head><body><a href="./latest/">latest</a></body></html>
-          EOF
-          done
 
       - name: Warn if remote search ingest key is missing
         if: ${{ env.DOCS_SEARCH_INGEST_API_KEY == '' }}
