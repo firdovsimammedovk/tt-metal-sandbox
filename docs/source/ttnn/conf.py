@@ -58,7 +58,7 @@ _GLOBAL_CSS = "https://firdovsimammedovk.github.io/tenstorrent-sandbox/_static/t
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "collapse_navigation": True,
+    "collapse_navigation": False,
     "titles_only": True,
     "navigation_depth": 2,
 }
